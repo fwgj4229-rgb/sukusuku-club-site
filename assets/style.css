@@ -92,6 +92,8 @@ h3{font-size:1.05rem;margin:1.8em 0 .5em}
     radial-gradient(ellipse 70px 30px at 60% 75%, #ffffffaa 60%, transparent 61%),
     linear-gradient(180deg, var(--sky-soft) 0%, var(--ground) 92%);
 }
+.hero-art{margin-top:22px;border-radius:18px;overflow:hidden;box-shadow:0 4px 0 var(--line);line-height:0}
+.hero-art svg{display:block;width:100%;height:auto}
 .hero h1{font-size:clamp(1.5rem,4.5vw,2.1rem);font-weight:800;margin:.2em 0 .5em}
 .hero h1 em{font-style:normal;color:var(--orange)}
 .hero p.lead{max-width:38em;color:var(--ink-soft);margin:0 0 1.4em}
