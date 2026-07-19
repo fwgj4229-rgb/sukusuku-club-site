@@ -1,0 +1,49 @@
+name: 公式サイトお知らせ監視
+
+on:
+  schedule:
+    - cron: "0 21 * * *"   # 毎日 6:00 JST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 依存関係インストール
+        run: pip install requests beautifulsoup4
+
+      - name: お知らせ取得・サイト更新
+        run: python scripts/update_news.py /tmp/new_items.md
+
+      - name: 変更をコミット・デプロイ
+        id: commit
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "news-bot"
+            git config user.email "actions@github.com"
+            git add data/official-news.json index.html sitemap.xml
+            git commit -m "公式サイトのお知らせを自動更新 ($(date +%Y-%m-%d))"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 記事化リマインダーIssueを作成
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "公式サイト更新あり ($(date +%Y-%m-%d)) — 記事化の検討を" \
+            --body-file /tmp/new_items.md
