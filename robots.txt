@@ -16,4 +16,4 @@ User-agent: Google-Extended
 Allow: /
 
 # サイトマップ
-Sitemap: https://fwgj4229-rgb.github.io/sukusuku-club-site/sitemap.xml
+Sitemap: https://sukusuku-lab.com/sitemap.xml
