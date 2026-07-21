@@ -1,6 +1,11 @@
 # Static site (sukusuku-lab.com)
 
-フコク赤ちゃん＆キッズクラブを応援・解説する非公式ファンサイトの静的サイト一式です。
+Static HTML/CSS site deployed via GitHub Pages.
+
+<details>
+<summary>Notes (JA)</summary>
+
+非公式ファンサイトの静的サイト一式です。
 
 ## 構成
 
@@ -36,3 +41,5 @@ sitemap.xml         サイトマップ
 - [ ] `about/index.html` の運営者名・連絡先を記入する
 - [ ] 各ページの「最終更新」日付を更新する（内容を変えたとき）
 - [ ] Google Search Console にサイトマップを登録する（検索・AI検索双方に有効）
+
+</details>
