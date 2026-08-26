@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>世界の国と首都をおぼえよう｜小学校高学年の地理れんしゅうアプリ</title>
+<meta name="description" content="世界の30か国の国名・首都・位置を、地図とクイズと語呂合わせでおぼえる学習アプリ。小学校高学年の地理の予習・復習に。">
+<meta name="robots" content="index,follow">
+<link rel="stylesheet" href="style.css?v=1">
+<link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+</head>
+<body>
+
+<header class="app">
+  <div class="head-inner">
+    <h1 class="app-title">世界の国と首都をおぼえよう<span class="dot">。</span></h1>
+    <span class="app-sub">小学校高学年の地理れんしゅう帳（30か国）</span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="モード">
+    <button type="button" role="tab" data-tab="zukan" aria-selected="true" aria-controls="panel-zukan">🗺 ずかん</button>
+    <button type="button" role="tab" data-tab="quiz" aria-selected="false" aria-controls="panel-quiz">✏️ クイズ</button>
+    <button type="button" role="tab" data-tab="kotsu" aria-selected="false" aria-controls="panel-kotsu">💡 おぼえかた</button>
+    <button type="button" role="tab" data-tab="kiroku" aria-selected="false" aria-controls="panel-kiroku">📊 きろく</button>
+  </nav>
+</header>
+
+<main class="wrap">
+
+  <!-- ========== ずかん ========== -->
+  <section class="panel" id="panel-zukan" role="tabpanel" aria-label="ずかん">
+    <div class="card">
+      <h2>🗺 地図でさがす</h2>
+      <p class="hint">地図の色のついた国、または右のリストをタップすると、首都と位置が表示されます。地図はドラッグで動かせて、マウスホイール・指2本・地図の下の＋−ボタンで拡大できます。</p>
+      <div class="zukan">
+        <div>
+          <div class="map-box" id="zukan-map">
+            <div class="map-legend">
+              <span><i style="background:#bcd9c4"></i>おぼえる国</span>
+              <span><i style="background:#9fcfae"></i>マスターした国</span>
+              <span><i style="background:#f78d2d"></i>えらんだ国</span>
+              <span><i style="background:#f2688c;border-radius:50%"></i>首都</span>
+            </div>
+          </div>
+          <p class="hint" style="margin:6px 2px 10px">黄色い点線は<b>赤道</b>、細い白線は<b>北回帰線・南回帰線</b>と<b>本初子午線（経度0度）</b>です。</p>
+          <div class="detail detail-box" id="zukan-detail"></div>
+        </div>
+        <div>
+          <div class="row" style="justify-content:space-between;margin-bottom:6px">
+            <span class="hint" id="zukan-count"></span>
+            <button type="button" class="btn ghost" id="toggle-cap" aria-pressed="false" style="padding:4px 14px;font-size:.84rem">首都をかくす</button>
+          </div>
+          <div class="chips" id="zukan-regions" style="margin-bottom:8px"></div>
+          <div class="country-list" id="zukan-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ========== クイズ ========== -->
+  <section class="panel" id="panel-quiz" role="tabpanel" aria-label="クイズ" hidden>
+
+    <div class="card" id="quiz-setup">
+      <h2>✏️ クイズのせってい</h2>
+      <div class="field">
+        <span class="label">出題のしかた（いくつでも選べます）</span>
+        <div class="chips" id="q-types"></div>
+      </div>
+      <div class="field">
+        <span class="label">出題する地域</span>
+        <div class="chips" id="q-regions"></div>
+      </div>
+      <div class="field">
+        <span class="label">問題数</span>
+        <div class="chips" id="q-count"></div>
+      </div>
+      <div class="field">
+        <span class="label">出題のじゅんばん</span>
+        <div class="chips">
+          <button type="button" id="q-weak" aria-pressed="true">にがてな国を多めに出す</button>
+        </div>
+      </div>
+      <button type="button" class="btn" id="btn-start">スタート！</button>
+    </div>
+
+    <div class="card" id="quiz-play" hidden>
+      <div class="qhead">
+        <span class="qcount" id="q-count-label"></span>
+        <span class="bar"><i id="q-bar" style="width:0%"></i></span>
+        <span class="score" id="q-score"></span>
+      </div>
+      <p class="question" id="q-question"></p>
+      <p class="qtype" id="q-type-label"></p>
+      <div id="quiz-map-box" hidden>
+        <div class="map-box" id="quiz-map"></div>
+      </div>
+      <div class="choices" id="q-choices" style="margin-top:12px"></div>
+      <div class="judge" id="q-judge" hidden aria-live="polite"></div>
+      <div class="row" style="margin-top:12px;justify-content:flex-end">
+        <button type="button" class="btn ghost" id="btn-back-setup" style="padding:6px 16px;font-size:.85rem">やめる</button>
+        <button type="button" class="btn" id="btn-next" hidden>次の問題へ →</button>
+      </div>
+      <p class="hint" style="margin-top:8px">キーボードの <b>1〜4</b> で解答、<b>Enter</b> で次の問題へ進めます。</p>
+    </div>
+
+    <div class="card result" id="quiz-result" hidden>
+      <h2 style="justify-content:center">🎉 けっか</h2>
+      <p class="stars" id="r-stars"></p>
+      <p class="big" id="r-score"></p>
+      <p class="msg" id="r-msg"></p>
+      <div id="r-miss-wrap" hidden>
+        <p class="hint" style="text-align:left"><b>まちがえた国（ここが伸びしろ！）</b></p>
+        <ul class="miss-list" id="r-miss"></ul>
+      </div>
+      <div class="row" style="justify-content:center;margin-top:10px">
+        <button type="button" class="btn" id="btn-retry-miss">まちがえた国だけもう一度</button>
+        <button type="button" class="btn ghost" id="btn-again">同じ設定でもう一度</button>
+        <button type="button" class="btn ghost" id="btn-setup-again">せっていを変える</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== おぼえかた ========== -->
+  <section class="panel" id="panel-kotsu" role="tabpanel" aria-label="おぼえかた" hidden>
+    <div class="card">
+      <h2>💡 首都のおぼえかた 5つのコツ</h2>
+      <ol class="tips">
+        <li><b>① 国名とにている首都は、セットで一気に覚える。</b><br>
+          メキシコ＝<b>メキシコシティ</b>、ブラジル＝<b>ブラジリア</b>のように、国名がそのまま首都名になっている国があります。まずここから覚えると、覚える数がぐっと減ります。
+          スウェーデン＝<b>ス</b>トックホルムのように「頭の音が同じ」、イラン＝テヘ<b>ラン</b>のように「終わりの音が同じ」もねらい目です。</li>
+        <li><b>② 意味を知ると、名前がただの音でなくなる。</b><br>
+          東京＝「<b>東</b>の京（みやこ）」、ペキン（北京）＝「<b>北</b>の京」、ソウル＝「みやこ」、ブエノスアイレス＝「よい空気」、ウランバートル＝「赤い英雄」。
+          意味とセットにすると忘れにくくなります。</li>
+        <li><b>③ 語呂合わせ（ごろあわせ）で音をつなぐ。</b><br>
+          「ドイツのベルが<b>リン</b>と鳴って<b>ベルリン</b>」のように、国と首都をひとつの文にしてしまう方法です。
+          下の表に30か国ぶんの語呂をのせました。<b>自分で作った語呂がいちばん強い</b>ので、しっくりこないものは作りかえてみてください。</li>
+        <li><b>④ かならず「地図の場所」とセットで覚える。</b><br>
+          名前だけを覚えると、テストの白地図問題で答えられません。「ずかん」で位置を見て、「クイズ」の<b>国名 ➜ 地図</b>で場所をあてる練習をすると、名前と位置が結びつきます。
+          となりの国もいっしょに見るのがコツです（例：ノルウェー・スウェーデン・フィンランドは<b>左から順</b>にならんでいる）。</li>
+        <li><b>⑤ 「まちがえた国だけ」を、日をあけてくり返す。</b><br>
+          いちどに全部やるより、<b>今日 → あした → 3日後 → 1週間後</b>と間をあけて復習するほうが記憶に残ります（分散学習）。
+          このアプリは、まちがえた国を自動でおぼえていて、「にがてな国を多めに出す」設定にすると優先的に出題します。</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>⚠ ひっかけ注意！ テストによく出る「最大の都市 ≠ 首都」</h2>
+      <p class="hint">いちばん有名な都市が首都とはかぎりません。ここはテストで差がつくところです。</p>
+      <ul class="trap-list" id="trap-list"></ul>
+    </div>
+
+    <div class="card">
+      <h2>📝 30か国の語呂合わせ一覧</h2>
+      <div style="overflow-x:auto">
+        <table class="record">
+          <thead><tr><th>国</th><th>首都</th><th>おぼえかた</th></tr></thead>
+          <tbody id="goro-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== きろく ========== -->
+  <section class="panel" id="panel-kiroku" role="tabpanel" aria-label="きろく" hidden>
+    <div class="card">
+      <h2>📊 わたしのきろく</h2>
+      <div class="stats">
+        <div class="stat"><b id="stat-total">0</b><span>といた問題</span></div>
+        <div class="stat"><b id="stat-rate">—</b><span>正答率</span></div>
+        <div class="stat"><b id="stat-streak">0</b><span>最高れんぞく正解</span></div>
+        <div class="stat"><b id="stat-learned">0</b><span>マスターした国</span></div>
+      </div>
+      <div class="row" style="justify-content:space-between">
+        <label class="hint">ならびかた
+          <select id="record-sort">
+            <option value="weak">にがてな順</option>
+            <option value="region">地域順</option>
+          </select>
+        </label>
+        <button type="button" class="btn ghost" id="btn-reset" style="padding:5px 14px;font-size:.84rem">きろくを消す</button>
+      </div>
+      <div style="overflow-x:auto;margin-top:8px">
+        <table class="record">
+          <thead><tr><th>国</th><th>首都</th><th class="num">正解/出題</th><th class="num">おぼえた度</th></tr></thead>
+          <tbody id="record-body"></tbody>
+        </table>
+      </div>
+      <p class="hint" style="margin-top:8px">きろくはこの端末のブラウザの中だけに保存されます（サーバーには送られません）。ブラウザのデータを消すと、きろくも消えます。</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app">
+  <p>世界の国と首都をおぼえよう — 小学校高学年向けの学習ミニアプリ<br>
+  地図データ：Natural Earth（パブリックドメイン）／正距円筒図法</p>
+  <p><a href="../">▶ すくすくクラブ研究室（トップ）へもどる</a></p>
+  <p class="foot-note">このページは「すくすくクラブ研究室。」（フコク赤ちゃん＆キッズクラブの非公式応援サイト）のおまけページです。クラブ本体とは関係のない、家庭学習用の手作りアプリです。</p>
+</footer>
+
+<script src="map-data.js?v=1"></script>
+<script src="countries.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>
