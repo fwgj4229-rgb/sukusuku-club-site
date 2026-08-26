@@ -212,3 +212,5 @@ ul.trap-list li b{color:#a8620a}
   .map-tools .tools-label{display:none}
   .map-tools{justify-content:center}
 }
+footer.app a{color:#1d7fbf;font-weight:700}
+footer.app .foot-note{max-width:640px;margin:8px auto 0;font-size:.75rem;line-height:1.7}
