@@ -15,7 +15,7 @@ review/index.html   正直レビュー（メリット7・デメリット5・FAQ�
 guide/index.html    入会ガイド（資格・手順・退会ルール、HowTo構造化データ入り）
 about/index.html    当サイトについて（運営者情報・編集方針・免責）
 assets/style.css    共通スタイル（ライト/ダーク対応）
-world-capitals/     学習ミニアプリ「世界の国と首都をおぼえよう」（中学1年生向け・30か国）
+world-capitals/     学習ミニアプリ「世界の国と首都をおぼえよう」（小学校高学年向け・30か国）
                     index.html / style.css / countries.js（学習データ）/ map-data.js（世界地図パス）/ app.js
                     ※サイト本体とは独立したページ。ナビゲーション・sitemap には未掲載
 robots.txt          クローラー許可設定（AIボット明示許可）
