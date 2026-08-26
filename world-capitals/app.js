@@ -648,6 +648,7 @@
     $('#q-type-label').textContent = TYPES[q.type].label;
     $('#q-judge').hidden = true;
     $('#q-judge').className = 'judge';
+    $('#q-judge').innerHTML = '';   // 前の問題の○×を残さない
     $('#btn-next').hidden = true;
 
     $('#quiz-map-box').hidden = !useMap;
