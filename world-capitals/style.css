@@ -1,0 +1,214 @@
+/* 世界の国と首都をおぼえよう（中学1年生向け学習アプリ） */
+:root{
+  --ground:#f4fbff;
+  --card:#ffffff;
+  --ink:#22456e;
+  --ink-soft:#5f7796;
+  --sky:#2fa8e1;
+  --sky-soft:#e3f4fc;
+  --sun:#ffd23f;
+  --sun-soft:#fff6d9;
+  --orange:#f78d2d;
+  --orange-soft:#ffeedd;
+  --pink:#f2688c;
+  --leaf:#2f9e6b;
+  --leaf-soft:#e2f5ea;
+  --red:#e2564a;
+  --red-soft:#fde8e6;
+  --line:#dbe7f0;
+  --sea:#d5eefb;
+  --land:#e8eef2;
+  --land-line:#ffffff;
+  --shadow:0 2px 0 rgba(34,69,110,.10);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Hiragino Maru Gothic ProN","BIZ UDGothic","Yu Gothic","Noto Sans JP",sans-serif;
+  line-height:1.7;
+  font-size:16px;
+}
+h1,h2,h3{line-height:1.4;margin:0}
+button{font:inherit;color:inherit}
+.wrap{max-width:1000px;margin:0 auto;padding:0 14px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ===== ヘッダー ===== */
+header.app{background:var(--card);border-bottom:4px solid var(--sky)}
+.head-inner{max-width:1000px;margin:0 auto;padding:14px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.app-title{font-size:1.25rem;font-weight:800;color:var(--sky);margin:0}
+.app-title .dot{color:var(--pink)}
+.app-sub{font-size:.8rem;color:var(--ink-soft)}
+
+/* タブ */
+nav.tabs{max-width:1000px;margin:0 auto;padding:0 14px 12px;display:flex;gap:8px;flex-wrap:wrap}
+nav.tabs button{
+  border:2px solid var(--sky-soft);background:var(--sky-soft);color:var(--ink);
+  border-radius:999px;padding:7px 18px;font-weight:700;font-size:.92rem;cursor:pointer;
+}
+nav.tabs button:hover{border-color:var(--sky)}
+nav.tabs button[aria-selected="true"]{background:var(--sky);border-color:var(--sky);color:#fff}
+
+main{padding:16px 0 60px}
+.panel[hidden]{display:none}
+
+/* ===== 共通パーツ ===== */
+.card{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.card + .card{margin-top:14px}
+.card h2{font-size:1.05rem;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.hint{font-size:.82rem;color:var(--ink-soft)}
+.btn{
+  border:2px solid var(--orange);background:var(--orange);color:#fff;
+  border-radius:999px;padding:9px 22px;font-weight:800;cursor:pointer;box-shadow:var(--shadow);
+}
+.btn:hover{filter:brightness(1.05)}
+.btn.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--sky)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* チップ（選択スイッチ） */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{
+  border:2px solid var(--line);background:#fff;border-radius:999px;
+  padding:5px 14px;font-size:.86rem;font-weight:700;cursor:pointer;
+}
+.chips button:hover{border-color:var(--sky)}
+.chips button[aria-pressed="true"]{background:var(--sun-soft);border-color:var(--sun)}
+.field{margin-bottom:12px}
+.field > .label{font-weight:800;font-size:.88rem;margin-bottom:5px;display:block}
+
+/* ===== 地図 ===== */
+.map-box{position:relative;background:var(--sea);border:2px solid var(--line);border-radius:14px;overflow:hidden}
+svg.map{display:block;width:100%;height:auto;overflow:hidden;touch-action:none;background:var(--sea)}
+svg.map .land{fill:var(--land);stroke:var(--land-line);stroke-width:.4;vector-effect:non-scaling-stroke}
+svg.map .land.tgt{fill:#bcd9c4}
+svg.map .land.learned{fill:#9fcfae}
+svg.map .land.is-focus{fill:var(--orange)}
+svg.map .land.is-correct{fill:var(--leaf)}
+svg.map .land.is-wrong{fill:var(--red)}
+svg.map .land.is-dim{opacity:.55}
+svg.map .hit{pointer-events:none}
+svg.map .hit-edge{fill:none;stroke:transparent;stroke-width:6}
+svg.map .hit-area{fill:transparent;stroke:none}
+svg.map.pickable .hit{pointer-events:all;cursor:pointer}
+svg.map.pickable .hit:focus-visible{stroke:#f78d2d;stroke-opacity:.9}
+svg.map .pin-dot,svg.map .pin-ring,svg.map .pin-label{pointer-events:none}
+svg.map .pin-dot{fill:var(--pink);stroke:#fff;stroke-width:1.5;vector-effect:non-scaling-stroke}
+svg.map .pin-ring{fill:none;stroke:var(--pink);stroke-width:1.5;vector-effect:non-scaling-stroke;opacity:.7}
+svg.map .pin-label{fill:var(--ink);font-weight:800;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
+svg.map .grid{stroke:#ffffff;stroke-width:.6;opacity:.75;fill:none;vector-effect:non-scaling-stroke}
+svg.map .grid.equator{stroke:#f9c74f;stroke-dasharray:6 4;opacity:.95}
+
+.map-tools{display:flex;flex-direction:row;gap:8px;margin-top:8px;align-items:center;justify-content:flex-end}
+.map-tools .tools-label{margin-right:auto;font-size:.78rem;color:var(--ink-soft)}
+.map-tools button{
+  width:38px;height:38px;border-radius:50%;border:2px solid var(--line);background:#fff;
+  font-weight:800;font-size:1.05rem;cursor:pointer;box-shadow:var(--shadow);line-height:1;
+}
+.map-tools button:hover{border-color:var(--sky)}
+.map-tools button.wide{width:38px;font-size:.7rem}
+.map-legend{position:absolute;left:8px;bottom:8px;pointer-events:none;background:rgba(255,255,255,.88);border-radius:10px;
+  padding:4px 9px;font-size:.72rem;color:var(--ink-soft);display:flex;gap:10px;flex-wrap:wrap}
+.map-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+
+/* ===== ずかん ===== */
+.zukan{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:820px){ .zukan{grid-template-columns:1fr 320px} }
+.country-list{max-height:520px;overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px}
+.country-list button{
+  display:flex;align-items:center;gap:8px;width:100%;text-align:left;
+  border:2px solid var(--line);background:#fff;border-radius:12px;padding:7px 12px;cursor:pointer;
+}
+.country-list button:hover{border-color:var(--sky);background:var(--sky-soft)}
+.country-list button[aria-current="true"]{border-color:var(--orange);background:var(--orange-soft)}
+.country-list .cname{font-weight:800}
+.country-list .ccap{margin-left:auto;font-size:.86rem;color:var(--ink-soft)}
+.country-list.hide-cap .ccap{filter:blur(5px)}
+.country-list.hide-cap button:hover .ccap,
+.country-list.hide-cap button[aria-current="true"] .ccap{filter:none}
+.detail-box{border:2px solid var(--sky-soft);background:var(--sky-soft);border-radius:14px;padding:12px}
+.detail dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.95rem}
+.detail dt{font-weight:800;color:var(--ink-soft);font-size:.85rem}
+.detail dd{margin:0}
+.detail .big{font-size:1.5rem;font-weight:800;color:var(--sky)}
+.detail .cap{font-size:1.25rem;font-weight:800;color:var(--orange)}
+.detail .memo{margin-top:10px;background:var(--sun-soft);border-radius:12px;padding:9px 12px;font-size:.88rem}
+
+/* ===== クイズ ===== */
+.qhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.qcount{font-weight:800;color:var(--ink-soft);font-size:.9rem}
+.bar{flex:1;min-width:120px;height:10px;background:var(--sky-soft);border-radius:999px;overflow:hidden}
+.bar > i{display:block;height:100%;background:var(--sky);border-radius:999px;transition:width .3s}
+.score{font-weight:800;font-size:.9rem}
+.score .ok{color:var(--leaf)}
+.score .ng{color:var(--red)}
+.question{font-size:1.15rem;font-weight:800;text-align:center;margin:6px 0 4px}
+.question .em{color:var(--orange);font-size:1.45rem}
+.qtype{text-align:center;font-size:.8rem;color:var(--ink-soft);margin-bottom:10px}
+.choices{display:grid;grid-template-columns:1fr;gap:9px}
+@media(min-width:560px){ .choices{grid-template-columns:1fr 1fr} }
+.choices button{
+  border:2px solid var(--line);background:#fff;border-radius:14px;padding:12px 14px;
+  font-weight:800;font-size:1rem;cursor:pointer;text-align:left;display:flex;gap:9px;align-items:center;
+}
+.choices button:hover:not(:disabled){border-color:var(--sky);background:var(--sky-soft)}
+.choices button .num{
+  width:24px;height:24px;flex:none;border-radius:50%;background:var(--sky-soft);color:var(--ink);
+  font-size:.8rem;display:flex;align-items:center;justify-content:center
+}
+.choices button.correct{background:var(--leaf-soft);border-color:var(--leaf);color:#1c6b48}
+.choices button.wrong{background:var(--red-soft);border-color:var(--red);color:#a53228}
+.choices button:disabled{cursor:default}
+.judge{margin-top:12px;border-radius:14px;padding:11px 14px;font-weight:800;display:flex;gap:10px;align-items:flex-start}
+.judge.ok{background:var(--leaf-soft);border:2px solid var(--leaf)}
+.judge.ng{background:var(--red-soft);border:2px solid var(--red)}
+.judge .mark{font-size:1.5rem;line-height:1}
+.judge .txt{font-weight:700;font-size:.92rem}
+.judge .txt b{font-size:1.05rem}
+
+/* 結果 */
+.result{text-align:center}
+.result .big{font-size:2.4rem;font-weight:800;color:var(--sky);line-height:1.2}
+.result .stars{font-size:1.8rem;letter-spacing:4px}
+.result .msg{font-weight:800;margin:6px 0 12px}
+.miss-list{display:flex;flex-direction:column;gap:6px;text-align:left;margin:10px 0}
+.miss-list li{background:var(--red-soft);border-radius:10px;padding:6px 12px;font-size:.92rem;list-style:none}
+.miss-list{padding:0;margin-left:0}
+
+/* ===== きろく ===== */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+@media(min-width:560px){ .stats{grid-template-columns:repeat(4,1fr)} }
+.stat{background:var(--sky-soft);border-radius:14px;padding:10px;text-align:center}
+.stat b{display:block;font-size:1.5rem;color:var(--sky)}
+.stat span{font-size:.78rem;color:var(--ink-soft)}
+table.record{width:100%;border-collapse:collapse;font-size:.9rem}
+table.record th,table.record td{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left}
+table.record th{font-size:.8rem;color:var(--ink-soft)}
+table.record td.num{text-align:right;white-space:nowrap}
+.mastery{display:inline-block;width:74px;height:9px;background:var(--line);border-radius:999px;overflow:hidden;vertical-align:middle}
+.mastery i{display:block;height:100%;background:var(--leaf)}
+footer.app{border-top:2px solid var(--line);margin-top:30px;padding:16px 0 34px;font-size:.8rem;color:var(--ink-soft);text-align:center}
+footer.app a{color:var(--link,#1d7fbf)}
+
+/* ホバー中の国 */
+svg.map .land.is-hover{fill:#ffd98a}
+/* おぼえかたタブ */
+ol.tips{margin:0;padding-left:1.3em;font-size:.93rem}
+ol.tips > li{margin-bottom:12px}
+ol.tips b{color:var(--ink)}
+ul.trap-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px;font-size:.92rem}
+ul.trap-list li{background:var(--caution-soft,#fdf1dc);border-radius:10px;padding:7px 12px}
+ul.trap-list li b{color:#a8620a}
+#record-sort{font:inherit;font-size:.85rem;border:2px solid var(--line);border-radius:8px;padding:3px 6px;background:#fff}
+
+/* スマホでは凡例を地図の下へ（地図をかくさないように） */
+@media(max-width:640px){
+  .map-legend{position:static;background:none;padding:4px 2px 0;font-size:.7rem;gap:6px}
+  .map-tools .tools-label{display:none}
+  .map-tools{justify-content:center}
+}
