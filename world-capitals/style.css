@@ -23,6 +23,8 @@
 }
 
 *{box-sizing:border-box}
+/* display を指定した要素でも hidden 属性が確実にきくようにする */
+[hidden]{display:none !important}
 html{-webkit-text-size-adjust:100%}
 body{
   margin:0;
