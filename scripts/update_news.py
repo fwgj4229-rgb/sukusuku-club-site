@@ -5,6 +5,7 @@
 - index.html              : <!-- official-news:start/end --> の間を再生成
 - 新着があった場合、new_items.md（リポジトリ外へ出力）に記事化メモを書き出す
 """
+import html
 import json
 import re
 import sys
@@ -48,7 +49,9 @@ def render_block(items):
     rows = []
     for it in items[:5]:
         _, m, d = it["date"].split(".")
-        rows.append(f"    <tr><th>{int(m)}/{int(d)}</th><td>{it['text']}</td></tr>")
+        # 外部サイト由来のテキストは必ずエスケープしてから埋め込む
+        safe_text = html.escape(it["text"], quote=False)
+        rows.append(f"    <tr><th>{int(m)}/{int(d)}</th><td>{safe_text}</td></tr>")
     rows_str = "\n".join(rows)
     return (
         "<!-- official-news:start -->\n"
