@@ -77,9 +77,25 @@ def parse_prices(text):
     return vals
 
 
+def clean_name(text):
+    """一覧のリンク文字列から SOLD OUT 表記・状態・価格以降を取り除き、(商品名, 状態) を返す。"""
+    t = re.sub(r"^\s*SOLD\s*OUT\s*", "", text, flags=re.I)
+    t = re.split(r"\s*(?:通常価格|[¥￥]\s*[0-9]|[0-9][0-9,]*\s*円|[0-9]+%\s*OFF)", t)[0]
+    m = re.search(r"\s*コンディション[：:]\s*(\S+)", t)
+    condition = m.group(1) if m else ""
+    if m:
+        t = t[:m.start()] + t[m.end():]
+    return clean(t), condition
+
+
 def parse_list_page(soup, base_url):
     items = {}
-    for a in soup.find_all("a", href=ITEM_RE):
+    links = soup.find_all("a", href=ITEM_RE)
+    # カテゴリ内の商品リンクには category_page_id が付く。付いていないものは
+    # おすすめ・ランキング等の別枠なので、付いたリンクがあればそれだけを対象にする
+    cat_id = urlparse(URL).path.rstrip("/").rsplit("/", 1)[-1]
+    in_cat = [a for a in links if f"category_page_id={cat_id}" in a["href"]]
+    for a in in_cat or links:
         url = urljoin(base_url, a["href"]).split("#")[0]
         key = item_key(url)
         if key in items:
@@ -94,10 +110,12 @@ def parse_list_page(soup, base_url):
         if not name:
             img = box.find("img", alt=True)
             name = clean(img["alt"]) if img else clean(a.get("title"))
+        name, condition = clean_name(name)
         prices = parse_prices(box.get_text(" "))
         items[key] = {
             "url": url,
             "name": name or "(商品名不明)",
+            "condition": condition,
             "price": min(prices) if prices else None,
             "regular_price": max(prices) if len(prices) > 1 and max(prices) > min(prices) else None,
             "sold_out": bool(re.search(r"SOLD\s*OUT|売り切れ|品切れ|在庫なし", box.get_text(" "), re.I)),
@@ -137,7 +155,8 @@ def fetch_items():
 
 def split_sentences(text):
     parts = re.split(r"(?<=[。！？!?])\s*|\n+", text)
-    return [clean(p) for p in parts if 15 <= len(clean(p)) <= 200]
+    # 価格が2つ以上並ぶ行（価格帯の絞り込みメニュー等）は本文ではないので除く
+    return [clean(p) for p in parts if 15 <= len(clean(p)) <= 200 and len(PRICE_RE.findall(p)) < 2]
 
 
 def char_bigrams(s):
@@ -169,18 +188,47 @@ def item_summary(url):
         m = soup.select_one(sel)
         desc = clean(m.get("content")) if m else ""
         if len(desc) >= 20:
-            return desc[:150] + ("…" if len(desc) > 150 else "")
+            return desc
     for t in soup(["script", "style", "noscript", "header", "footer", "nav"]):
         t.decompose()
-    return extractive_summary(soup.get_text("\n"))[:200]
+    return extractive_summary(soup.get_text("\n"))
 
 
-def keywords(names, n=5):
-    words = Counter()
-    for name in names:
-        for w in set(re.findall(r"[ァ-ヴー]{3,}|[一-龥]{2,}|[A-Za-z]{3,}", name)):
-            words[w] += 1
-    return [w for w, c in words.most_common(n) if c >= 2]
+def strip_boilerplate(items, limit=150):
+    """各商品の概要から、多くの商品に共通する定型文（「本商品は展示品です」等）を除いて短くする。"""
+    def sents(text):
+        text = re.sub(r"^「[^」]*」", "", text)  # 冒頭の「商品名」
+        return [x for x in re.split(r"(?<=。)", text) if x.strip()]
+
+    tail = Counter()
+    for it in items:
+        tail.update({x.strip()[-15:] for x in sents(it.get("summary", ""))})
+    for it in items:
+        if not it.get("summary"):
+            continue
+        name = it["name"]
+        kept = [x.strip() for x in sents(it["summary"])
+                if not (len(items) >= 3 and tail[x.strip()[-15:]] >= 3)]
+        text = " ".join(kept)
+        if text.startswith(name):  # 説明文が商品名から始まる場合は重複部分を削る
+            text = text[len(name):].strip()
+        it["summary"] = text[:limit] + ("…" if len(text) > limit else "")
+
+
+def count_by(values, n=6):
+    c = Counter(v for v in values if v)
+    return "、".join(f"{k} {v}件" for k, v in c.most_common(n))
+
+
+def label_of(name):
+    m = re.match(r"【\s*([^】]+?)\s*】", name)
+    return m.group(1) if m else ""
+
+
+def series_of(name):
+    # 「PURO/プーロ」「Y HOPE/ワイホープ」「SALA」のような英大文字のシリーズ名
+    m = re.search(r"(?<![A-Za-z0-9])((?:[A-Z] )?[A-Z]{3,})(?![A-Za-z0-9])", re.sub(r"【[^】]*】", "", name))
+    return m.group(1) if m else ""
 
 
 def yen(v):
@@ -197,12 +245,18 @@ def overall_summary(new_items, total):
     if offs:
         lines.append(f"・割引率: 平均 約{round(sum(offs) / len(offs) * 100)}%"
                      f"（最大 約{round(max(offs) * 100)}%）")
-    kw = keywords([i["name"] for i in new_items])
-    if kw:
-        lines.append(f"・多いキーワード: {'、'.join(kw)}")
+    labels = count_by(label_of(i["name"]) for i in new_items)
+    if labels:
+        lines.append(f"・種別: {labels}")
+    series = count_by(series_of(i["name"]) for i in new_items)
+    if series:
+        lines.append(f"・シリーズ: {series}")
+    conds = count_by(i.get("condition") for i in new_items)
+    if conds:
+        lines.append(f"・状態: {conds}")
     sold = sum(i["sold_out"] for i in new_items)
     if sold:
-        lines.append(f"・うち {sold} 件はすでに売り切れ表示です。")
+        lines.append(f"・販売中 {len(new_items) - sold} 件 / 売り切れ表示 {sold} 件")
     return "\n".join(lines)
 
 
@@ -218,6 +272,8 @@ def build_body(new_items, total, first_run):
             price += f"（通常 {yen(it['regular_price'])} → 約{off}%OFF）"
         out.append(f"{n}. {it['name']}{' [SOLD OUT]' if it['sold_out'] else ''}")
         out.append(f"   価格: {price}")
+        if it.get("condition"):
+            out.append(f"   状態: {it['condition']}")
         if it.get("summary"):
             out.append(f"   概要: {it['summary']}")
         out.append(f"   {it['url']}")
@@ -252,10 +308,12 @@ def main():
     print(f"取得 {len(items)} 件 / 新着 {len(new_keys)} 件")
 
     if new_keys:
-        new_items = [items[k] for k in new_keys]
-        for it in new_items[:MAX_DETAIL_FETCH]:
+        # 販売中の商品を先に並べる
+        new_items = sorted((items[k] for k in new_keys), key=lambda i: i["sold_out"])
+        for it in [i for i in new_items if not i["sold_out"]][:MAX_DETAIL_FETCH]:
             it["summary"] = item_summary(it["url"])
             time.sleep(1)
+        strip_boilerplate(new_items)
         subject = (f"[source アウトレット] 監視開始（掲載 {len(items)} 件）" if first_run
                    else f"[source アウトレット] 新着 {len(new_keys)} 件 ({datetime.now(JST):%Y-%m-%d})")
         body = build_body(new_items, len(items), first_run)
