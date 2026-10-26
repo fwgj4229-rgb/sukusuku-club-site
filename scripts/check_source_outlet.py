@@ -155,8 +155,8 @@ def fetch_items():
 
 def split_sentences(text):
     parts = re.split(r"(?<=[。！？!?])\s*|\n+", text)
-    # 価格が2つ以上並ぶ行（価格帯の絞り込みメニュー等）は本文ではないので除く
-    return [clean(p) for p in parts if 15 <= len(clean(p)) <= 200 and len(PRICE_RE.findall(p)) < 2]
+    # 価格が2つ以上並ぶ行（価格帯の絞り込みメニュー等）や【…】付きの商品名（関連商品欄）は本文ではないので除く
+    return [clean(p) for p in parts if 15 <= len(clean(p)) <= 200 and len(PRICE_RE.findall(p)) < 2 and "【" not in p]
 
 
 def char_bigrams(s):
@@ -197,7 +197,7 @@ def item_summary(url):
 def strip_boilerplate(items, limit=150):
     """各商品の概要から、多くの商品に共通する定型文（「本商品は展示品です」等）を除いて短くする。"""
     def sents(text):
-        text = re.sub(r"^「[^」]*」", "", text)  # 冒頭の「商品名」
+        text = re.sub(r"^「[^」]*」\s*(?:は、?)?", "", text)  # 冒頭の「商品名」(は、)
         return [x for x in re.split(r"(?<=。)", text) if x.strip()]
 
     tail = Counter()
