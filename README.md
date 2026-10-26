@@ -45,24 +45,4 @@ sitemap.xml         サイトマップ
 - [ ] 各ページの「最終更新」日付を更新する（内容を変えたとき）
 - [ ] Google Search Console にサイトマップを登録する（検索・AI検索双方に有効）
 
-## source アウトレット新着監視（GitHub Actions）
-
-`.github/workflows/source-outlet.yml` が毎日 2:46 JST に
-https://www.source-jp.com/view/category/ct87 をチェックし、新着商品があれば要約付きで Gmail 送信します。
-要約は外部APIを使わず、商品名・価格・商品ページの説明文から機械的に作成します（APIキー不要）。
-
-- スクリプト: `scripts/check_source_outlet.py`（`--dry-run` で送信せず本文を表示）
-- 前回の取得状態: `data/source-outlet.json`（ワークフローが自動コミット）
-- 初回実行時は「監視開始」として現在の掲載商品一覧を1通送り、以降は新着のみ送信
-
-### 必要な Secrets（Settings → Secrets and variables → Actions）
-
-| 名前 | 内容 |
-|---|---|
-| `GMAIL_USER` | 送信元 Gmail アドレス |
-| `GMAIL_APP_PASSWORD` | Gmail のアプリパスワード（Google アカウントで2段階認証を有効化 → 「アプリパスワード」で発行） |
-| `MAIL_TO` | 送信先アドレス（カンマ区切りで複数可） |
-
-設定後、Actions タブから「source アウトレット新着監視」を手動実行（Run workflow）すると動作確認できます。
-
 </details>
